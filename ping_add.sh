@@ -43,21 +43,21 @@ function addTree() {
     done
     cd ..
 }
+#driver
+if [ $(check "$1") == "File" ]; then
 
-if [ $(check $1) == "File" ]; then
-
-    if [ $(grep "node $(hashfile $1) $1" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
-        echo node $(hashfile $1) $1 >>$(pwd)/.ping/index
-        cp $1 ${pa}/$(hashfile $1)
+    if [ $(grep "node $(hashfile "$1") "$1"" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
+        echo node $(hashfile "$1") "$1" >>$(pwd)/.ping/index
+        cp "$1" ${pa}/$(hashfile "$1")
     fi
 
 else
 
-    if [ $(grep "tree $(hashtree $1) $1" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
-        echo tree $(hashtree $1) $1 >>$(pwd)/.ping/index
+    if [ $(grep "tree $(hashtree "$1") "$1"" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
+        echo tree $(hashtree "$1") "$1" >>$(pwd)/.ping/index
     fi
-    if [ $(grep $1 ${pa}/$(hashtree $1) | wc -l) -eq 0 ]; then
-        echo $1 >>${pa}/$(hashtree $1)
+    if [ $(grep "$1" ${pa}/$(hashtree "$1") | wc -l) -eq 0 ]; then
+        echo "$1" >>${pa}/$(hashtree "$1")
     fi
-    addTree ${pa}/$(hashtree $1)
+    addTree ${pa}/$(hashtree "$1")
 fi
