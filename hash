@@ -1,0 +1,26 @@
+#!/bin/bash
+function hashfile() {
+    (cat $1;echo $1;) | sha1sum | awk '{print $1}'
+}
+
+function hashtree() 
+{
+cd $1;
+for file in $(find ./ -type f)
+do
+echo $(hashfile "$file") >> a
+done
+(cat a;pwd;)|sha1sum|awk '{print $1}'
+rm a
+cd ..;
+}
+
+function check() {
+    a=$(ls -a $1 | wc -l)
+    if [ $a -gt 1 ] 
+    then
+        echo "Directory"
+    else
+        echo "File"
+    fi
+}

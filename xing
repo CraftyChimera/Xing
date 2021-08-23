@@ -1,0 +1,5 @@
+#!/bin/bash
+mkdir $(pwd)/.xing
+touch $(pwd)/.xing/head
+mkdir $(pwd)/.xing/objects
+

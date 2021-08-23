@@ -1,0 +1,38 @@
+#!/bin/bash
+opath=$(pwd)
+. hash
+
+function add() {
+    cd $1
+    for file in $(ls -A); do
+        if [ $(check $file) == "File" ]; then
+            if [ $(grep "$(hashfile $file) $(pwd)/$file" ${opath}/.xing/index | wc -l) -eq 0 ]; then
+               a="${opath}/"               
+               current=$(pwd)/$file                       
+               if [ $(grep "$(hashfile $file) ${current#${a}}" ${opath}/.xing/index | wc -l) -eq 0 ]
+               then 
+               echo "$(hashfile $file) ${current#${a}}">>${opath}/.xing/index
+               fi
+            fi
+               cp $file ${opath}/.xing/objects/$(hashfile $file)
+        else
+                       a="${opath}/.xing/objects/$(hashtree $file)"
+                       add $file
+
+        fi
+    done
+    cd ..
+}
+
+#driver
+if [ $(check "$1") == "File" ]; then
+    if [ $(grep "$(hashfile "$1") $(pwd)/"$1"" $(pwd)/.xing/index | wc -l) -eq 0 ]; then
+        a="${opath}/"      
+        current="$(pwd)/$1"   
+        echo "$(hashfile "$1") ${current#${a}}" >>$(pwd)/.xing/index
+        cp "$1" ${opath}/.xing/objects/$(hashfile "$1")
+    fi
+else
+    add "$1"
+    cd ${opath}
+fi
