@@ -7,7 +7,7 @@ function hashfile() {
     (cat $1;echo $1;) | sha1sum | awk '{print $1}'
 }
 function hashtree() {
-    (echo $1;ls -A $1;) | sha1sum | awk '{print $1}'
+(ls -A $1;pwd;) | sha1sum | awk '{print $1}';
 }
 
 function check() {
@@ -22,38 +22,37 @@ function check() {
 
 function addfile() {
     if [ $(check $1) == "File" ]; then
-        b=$(hashfile $1)
-        cp $1 $(pwd)/.ping/objects/$b
+        cp $1 $(pwd)/.ping/objects/$(hashfile $1)
     fi
 }
 function addTree() {
-    A=$(pwd)/$(cat $1 | head -1)
-    cd $A
-    for file in $(ls -A $A); do
+    cd $2
+    for file in $(ls -A); do
         if [ $(check $file) == "File" ]; then
             if [ $(grep "node $(hashfile $file) $file" $1 | wc -l) -eq 0 ]; then
                 echo node $(hashfile $file) $file >>$1
+            if [ $(grep "$(hashfile $file) $(pwd)/$file" ${ping}/index | wc -l) -eq 0 ]; then
                 echo "$(hashfile $file) $(pwd)/$file">>${ping}/index
+            fi
                 cp $file ${pa}/$(hashfile $file)
             fi
         else
+            if [ $(grep "tree $(hashtree $file) $file" $1 | wc -l) -eq 0 ];then
             echo tree $(hashtree $file) $file >>$1
-            echo $file >>${pa}/$(hashtree $file)
-            addTree ${pa}/$(hashtree $file)
+            fi
+            addTree ${pa}/$(hashtree $file) $file
         fi
     done
     cd ..
 }
 #driver
 if [ $(check "$1") == "File" ]; then
-    if [ $(grep "node $(hashfile "$1") "$1"" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
-        echo node $(hashfile "$1") "$1" >>$(pwd)/.ping/index
+    if [ $(grep "$(hashfile "$1") $(pwd)/"$1"" $(pwd)/.ping/index | wc -l) -eq 0 ]; then
+        echo "$(hashfile "$1") $(pwd)/"$1"" >>$(pwd)/.ping/index
         cp "$1" ${pa}/$(hashfile "$1")
     fi
-
 else
-    if [ $(grep "$1" ${pa}/$(hashtree "$1") | wc -l) -eq 0 ]; then
-        echo "$1" >>${pa}/$(hashtree "$1")
-    fi
-    addTree ${pa}/$(hashtree "$1")
+    addTree ${pa}/$(hashtree "$1") $1
 fi
+cd ${ping}
+cd ..
