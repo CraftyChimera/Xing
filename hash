@@ -1,6 +1,6 @@
 #!/bin/bash
 function hashfile() {
-    (cat $1;echo $1;) | sha1sum | awk '{print $1}'
+    (cat $1;) | sha1sum | awk '{print $1}'
 }
 
 function hashtree() 
