@@ -83,7 +83,7 @@ int main()
 {
     FILE *x = fopen("index", "r+"), *y;
     char m[300], hash[1000][200], string[1000][200], tail[1000][200], fakehash[1000][200];
-    int i = 0, count = 0, d[1000], maxd = 0;
+    int i = 0, count = 0, d[1000], maxd = 0,file[1000];
     while (fgets(m, 100, x))
     {
         strcpy(hash[i], word(m, 1));
@@ -92,6 +92,7 @@ int main()
         free(word(m, 2));
         d[i] = depth(string[i]);
         if(maxd<d[i])maxd=d[i];
+        file[i]=1;
         i++;
     }
     count = i;
@@ -105,23 +106,21 @@ int main()
         }
     for (i = 0; i < count; i++)
         if (d[i] == maxd)
-        {
+        {   file[i]=0;
             sprintf(m,"cp %s %s",fakehash[i],hashb(fakehash[i]));
-             system(m);
-            strcpy(hash[i], hashb(fakehash[i]));  
+             system(m); strcpy(hash[i], hashb(fakehash[i]));
+
         }
 
     while (maxd)
     {
         for (i = 0; i < count; i++)
         {
-            if (d[i] == maxd)
+            if (d[i] == maxd && file[i]==0)
             {   separate(string[i], tail[i]);
                 strcpy(fakehash[i], fakehashb(string[i]));
-                printf("%s \t %s \t%s\t %s\n",string[i],tail[i],fakehash[i],hash[i]);
-                y = fopen(fakehash[i], "a");
-                fprintf(y, "\ntree %s %s\n", hash[i], tail[i]);
-                fclose(y);
+                sprintf(m,"/home/drake/xing/commit.sh %s %s %s",hash[i],tail[i],fakehash[i]);
+                system(m);
             }
         }
 
@@ -130,9 +129,8 @@ int main()
             if (d[i] == maxd)
             {sprintf(m,"cp %s %s",fakehash[i],hashb(fakehash[i]));
              system(m);
-            strcpy(m, hashb(fakehash[i]));
-            strcpy(hash[i],m);   
-                d[i]--;
+            strcpy(hash[i], hashb(fakehash[i]));   
+                d[i]--;file[i]=0;
             }
         }
         maxd--;
