@@ -2,8 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <openssl/sha.h>
-char rem[100][1000];
-counter = 0;
+#include <sys/stat.h>
+char rem[100][1000];char buff[1000];
+int counter = 0;
 void word(char *a, int n,char *b)
 {
     int space[100],k=1,i;char ret[1000];
@@ -48,7 +49,6 @@ void fakehashb(char *a,char *b)
     SHA1_Update(&ctx, a, strlen(a));
     unsigned char tmphash[SHA_DIGEST_LENGTH];
     SHA1_Final(tmphash, &ctx);
-    unsigned char *hash = malloc(sizeof(char) * SHA_DIGEST_LENGTH * 2);
     int i = 0;
     for (i = 0; i < SHA_DIGEST_LENGTH; i++)
     {
@@ -61,6 +61,7 @@ void fakehashb(char *a,char *b)
 int depth(char *a)
 {
     int j = 0;
+    if(strlen(a)==0) return -1;
     for (int i = 0; a[i] != '\0'; i++)
     {
         if (a[i] == '/')
@@ -87,10 +88,24 @@ void separate(char *a, char *b)
     a[0] = '\0';
 }
 
-int main()
-{
+void addtree(char *a,char*b,char*c)
+{FILE* test=fopen(c,"a+");char save[100],tree[100];
+sprintf(tree,"tree %s %s",a,b);
+int flag=0;
+while(fgets(save,99,test))
+{save[strlen(save)-1]='\0';
+if(strcmp(save,tree)==0)
+flag=-1;
+}
+if(flag==0)
+fprintf(test,"%s\n",tree);
+fclose(test);
+return;}
+
+int main(int argv,char **argc)
+{   struct stat check;
     FILE *x = fopen(".xing/index", "r+"), *y;
-    char m[3000], hash[10000][200], string[10000][200], tail[10000][200], fakehash[10000][200];
+    char m[3000], hash[10000][200], string[10000][200], tail[10000][200], fakehash[10000][200],a[1000];
     int i = 0, count = 0, d[1000], maxd = 0, file[1000];
     while (fgets(m, 100, x))
     {
@@ -111,15 +126,17 @@ int main()
         fprintf(y, "node %s %s", hash[i], tail[i]);
         fclose(y);
        }
-
+    fclose(x);
     for (i = 0; i < count; i++)
         if (d[i] == maxd)
-        {
-            file[i] = 0;
+        {   file[i] = 0;
             hashb(fakehash[i],hash[i]);
-            sprintf(m, "cp %s %s", fakehash[i], hash[i]);
-            system(m);
-        }
+            if(stat(hash[i],&check)!=0)
+               {       FILE * read=fopen(fakehash[i],"r"),*write=fopen(hash[i],"w");
+         while(fgets(a,500,read))
+            fputs(a,write);
+            fclose(read);fclose(write);}
+            }
 
     while (maxd)
     {
@@ -129,24 +146,36 @@ int main()
             {
                 separate(string[i], tail[i]);
                 fakehashb(string[i],fakehash[i]);
-                sprintf(m, "/home/drake/xing/commit.sh %s %s %s", hash[i], tail[i], fakehash[i]);
-                system(m);
-                }
-        }
+             addtree(hash[i],tail[i],fakehash[i]);
+             //sprintf(m, "/home/drake/xing/commit.sh %s %s %s", hash[i], tail[i], fakehash[i]);
+             //system(m);
+        }}
 
         for (i = 0; i < count; i++)
         {
             if (d[i] == maxd)
-            {  hashb(fakehash[i],hash[i]);
-                sprintf(m, "cp %s %s", fakehash[i],hash[i]);
-                system(m);
+            {  hashb(fakehash[i],hash[i]);         
+            if(stat(hash[i],&check)!=0)//if hash doesn't exist create it otherwise don't.
+               {FILE * read=fopen(fakehash[i],"r"),*write=fopen(hash[i],"w");
+         while(fgets(a,500,read))//
+            fputs(a,write);
+            fclose(read);fclose(write);}
                 d[i]--;
                 file[i] = 0;
+             if(strlen(string[i])==0)
+            {
+             FILE *commit=fopen("comm","a+");
+             fprintf(commit,"parent tree %s\n",hash[i]);
+             fclose(commit);                      
+            }
                 }
         }
         maxd--;
     }
     for (int i = 0; i < counter; i++)
         remove(rem[i]);
+    FILE * commit=fopen("comm","a+");
+    fprintf(commit,"commit message \n%s",argc[1]);
+    fclose(commit);
     return 0;
 }
