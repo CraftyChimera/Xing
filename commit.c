@@ -25,14 +25,14 @@ void word(char *a, int n,char *b)
 
 void hashb(char *a,char *b)
 {
-    char str[2500];
+    char str[2500],an[25000];an[0]='\0';
     FILE *fi;
     fi = fopen(a, "r");
-    while (fgets(str, 256, fi));
+    while (fgets(str, 256, fi))strcat(an,str);
     fclose(fi);
     SHA_CTX ctx;
     SHA1_Init(&ctx);
-    SHA1_Update(&ctx, str, strlen(str));
+    SHA1_Update(&ctx, an, strlen(an)-1);
     unsigned char tmphash[SHA_DIGEST_LENGTH];
     SHA1_Final(tmphash, &ctx);
     int i = 0;
@@ -46,7 +46,7 @@ void hashb(char *a,char *b)
 void fakehashb(char *a,char *b)
 {   SHA_CTX ctx;
     SHA1_Init(&ctx);
-    SHA1_Update(&ctx, a, strlen(a));
+    SHA1_Update(&ctx, a, strlen(a)-1);
     unsigned char tmphash[SHA_DIGEST_LENGTH];
     SHA1_Final(tmphash, &ctx);
     int i = 0;
@@ -60,8 +60,8 @@ void fakehashb(char *a,char *b)
 
 int depth(char *a)
 {
-    int j = 0;
-    if(strlen(a)==0) return -1;
+    int j = 1;
+    if(strlen(a)==0) return 0;
     for (int i = 0; a[i] != '\0'; i++)
     {
         if (a[i] == '/')
@@ -88,8 +88,11 @@ void separate(char *a, char *b)
     a[0] = '\0';
 }
 
-void addtree(char *a,char*b,char*c)
+void addtree(char *a,char*b,char*c,int i)
 {FILE* test=fopen(c,"a+");char save[100],tree[100];
+if(i==0)
+sprintf(tree,"node %s %s",a,b);
+else
 sprintf(tree,"tree %s %s",a,b);
 int flag=0;
 while(fgets(save,99,test))
@@ -104,7 +107,7 @@ return;}
 
 int main(int argv,char **argc)
 {   struct stat check;
-    FILE *x = fopen(".xing/index", "r+"), *y;
+    FILE *x = fopen(".xing/index", "r+");
     char m[3000], hash[10000][200], string[10000][200], tail[10000][200], fakehash[10000][200],a[1000];
     int i = 0, count = 0, d[1000], maxd = 0, file[1000];
     while (fgets(m, 100, x))
@@ -122,9 +125,7 @@ int main(int argv,char **argc)
     {
         separate(string[i], tail[i]);
         fakehashb(string[i],fakehash[i]);
-        y = fopen(fakehash[i], "a");
-        fprintf(y, "node %s %s", hash[i], tail[i]);
-        fclose(y);
+        addtree(hash[i],tail[i],fakehash[i],0);
        }
     fclose(x);
     for (i = 0; i < count; i++)
@@ -132,12 +133,12 @@ int main(int argv,char **argc)
         {   file[i] = 0;
             hashb(fakehash[i],hash[i]);
             if(stat(hash[i],&check)!=0)
-               {       FILE * read=fopen(fakehash[i],"r"),*write=fopen(hash[i],"w");
+               {       FILE * read=fopen(fakehash[i],"r"),*write=fopen(hash[i],"w");//copy function doesn't exist in C
          while(fgets(a,500,read))
             fputs(a,write);
-            fclose(read);fclose(write);}
+            fclose(read);fclose(write);d[i]--;}
             }
-
+maxd--;
     while (maxd)
     {
         for (i = 0; i < count; i++)
@@ -146,9 +147,7 @@ int main(int argv,char **argc)
             {
                 separate(string[i], tail[i]);
                 fakehashb(string[i],fakehash[i]);
-             addtree(hash[i],tail[i],fakehash[i]);
-             //sprintf(m, "/home/drake/xing/commit.sh %s %s %s", hash[i], tail[i], fakehash[i]);
-             //system(m);
+             addtree(hash[i],tail[i],fakehash[i],1);
         }}
 
         for (i = 0; i < count; i++)
@@ -164,7 +163,7 @@ int main(int argv,char **argc)
                 file[i] = 0;
              if(strlen(string[i])==0)
             {
-             FILE *commit=fopen("comm","a+");
+             FILE *commit=fopen("comm","w");
              fprintf(commit,"parent tree %s\n",hash[i]);
              fclose(commit);                      
             }
