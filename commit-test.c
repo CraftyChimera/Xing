@@ -31,16 +31,4 @@ void word(char *a, int n,char *b)
     return;
 }
 int main()
-{ char m[3000],string[10000][200],hash[10000][200];int maxd,d[1000],file[1000],i;
-FILE *x = fopen(".xing/index", "r+");
-    while (fgets(m, 100, x))
-    {
-        word(m, 1,hash[i]);
-        word(m, 2,string[i]);
-        d[i] = depth(string[i]);
-        if (maxd < d[i])
-            maxd = d[i];
-        file[i] = 1;
-        i++;
-    }
-}
+{ 
