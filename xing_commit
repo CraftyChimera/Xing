@@ -6,14 +6,14 @@ function hashfile() {
     (cat $1;echo $1;) | sha1sum | awk '{print $1}'
 }
 echo "tree $(hashtree $(pwd))" > a
-if [ $(cat $(pwd)/.ping/head |wc -l) -gt 0 ]
+if [ $(cat $(pwd)/.xing/head |wc -l) -gt 0 ]
 then
-echo "parent $(cat $(pwd)/.ping/head)">>a;
+echo "parent $(cat $(pwd)/.xing/head)">>a;
 fi
 echo "Author $USER">>a
 echo >> a
 echo $1 >> a
 b=$(hashfile a)
-cp a $(pwd)/.ping/objects/$b
+cp a $(pwd)/.xing/objects/$b
 rm a
-echo $b>$(pwd)/.ping/head
+echo $b>$(pwd)/.xing/head
